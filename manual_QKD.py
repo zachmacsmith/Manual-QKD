@@ -1,7 +1,7 @@
 import random as rand
 import array
 
-keyLength = 50
+keyLength = 100
 bases = ["X", "Z"]
 keyBits = [0, 1]
 eve = False
@@ -94,29 +94,39 @@ if (eve):
     print("Eve re-encoded key: ", end='')
     print(''.join(currentMessage))
 
-
+#TODO introduce small amount of random noise from the channel (e.g small probability of bit flips)
 
 # Decodes Key sent by Alice using Alice Basis (should be identical without Eve)
 aliceDecoded = decode(currentMessage, aliceBasis)
 print("Alice decoded key: ", end='')
 print(aliceDecoded)
 
-#Decodes key sent by Alice using bob basis (should be 25% error rate before sifting)
+#Decodes key sent by Alice using bob basis (should be 25% error rate before sifting without Eve)
 bobDecoded = decode(currentMessage, bobBasis)
 print("Bob decoded key: ", end='')
 print(bobDecoded)
 
 #Prints Error of unsifted bob key (should approach 0.25 as keyLength -> inf)
-errorBob = checkError(bobDecoded, aliceDecoded)
-print(errorBob)
+unsiftedError = checkError(bobDecoded, aliceKey)
+print("Unsifted error: " + str(unsiftedError))
 
+#Siftings keys
+aliceSifted = []
+bobSifted = []
+siftedKeyLength = 0
 
-# Transform keys and basis depending on Eve's measurements
-def eve(key, basis): 
-    return key, basis
+for i in range(keyLength):
+    if (aliceBasis[i] == bobBasis[i]):
+        #Alice sifts her original key, while bob decodes the key he received. 
+        aliceSifted.append(aliceKey[i])
+        bobSifted.append(bobDecoded[i])
+        siftedKeyLength += 1
 
-finAliceKey, finAliceBases = eve(aliceKey, aliceBasis)
+print("Alice Sifted Key", end='')
+print(aliceSifted)
+print("Bob Sifted Key", end='')
+print(bobSifted)
 
-
-
-
+#Prints Error of unsifted bob key (should approach 0.25 as keyLength -> inf)
+QBER = checkError(bobSifted, aliceSifted)
+print("Sifted error: " + str(QBER))
